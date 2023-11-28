@@ -1,6 +1,12 @@
 {
-  "token": "Coloque o TOKEN aqui!",
-  "ip": "140.238.182.193:19132",
+  "token": "TOKEN",
+  "ip": "IP",
   "allowed_roles": [965360361521938442, 1117830793121759393],
-  "version": "bedrock"
+  "version": "bedrock",
+
+  "has_footer": "true",
+  "footer": "ToP - Bot",
+
+  "has_thumbnail": "true",
+  "thumbnail": "https://i.imgur.com/UteffyD.png"
 }

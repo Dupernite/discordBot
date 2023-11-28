@@ -3,42 +3,38 @@ import requests
 import ipaddress
 from discord import Bot, Intents, Interaction, Embed, Option
 
-# Define constantes de cores para mensagens incorporadas
+# Define color constants for embedded messages
 green = 0x00d26a
 red = 0xf8312f
 yellow = 0xf7cd64
 
-
-# Função para obter o token do bot do arquivo de configuração
+# Function to get the bot token from the configuration file
 def get_token():
     with open('config.json', 'r') as file:
         data = json.load(file)
         return data['token']
 
-
-# Função para validar um endereço IP (com ou sem uma porta)
+# Function to validate an IP address (with or without a port)
 def isValidIP(ip):
     try:
-        if ':' in ip:  # se o endereço IP contém uma porta
-            ip, port = ip.split(':')  # divide o IP e a porta
-            ipaddress.ip_address(ip)  # valida o IP
-            if not 1 <= int(port) <= 65535:  # valida a porta
+        if ':' in ip:  # if the IP address contains a port
+            ip, port = ip.split(':')  # split the IP and the port
+            ipaddress.ip_address(ip)  # validate the IP
+            if not 1 <= int(port) <= 65535:  # validate the port
                 return False
         else:
-            ipaddress.ip_address(ip)  # valida o IP
+            ipaddress.ip_address(ip)  # validate the IP
         return True
     except ValueError:
         return False
 
-
-# Função para obter um valor do arquivo de configuração
+# Function to get a value from the configuration file
 def get_from_config(name, type):
     with open('config.json', 'r') as file:
         data = json.load(file)
         return data.get(name, type)
 
-
-# Função para atualizar o endereço IP no arquivo de configuração
+# Function to update the IP address in the configuration file
 def update_ip_in_config(new_ip):
     with open('config.json', 'r') as file:
         data = json.load(file)
@@ -48,11 +44,17 @@ def update_ip_in_config(new_ip):
     with open('config.json', 'w') as file:
         json.dump(data, file)
 
-
-# Função para obter a mensagem de status do servidor
+# Function to get the server status message
 def get_message():
     ip = get_from_config('ip', None)
     version = get_from_config('version', None)
+
+    if get_from_config('has_footer', None):
+        footer = get_from_config('footer', None)
+
+    if get_from_config('has_thumbnail', None):
+        thumnail = get_from_config('thumbnail', None)
+
     if isValidIP(ip):
         url = f"https://api.mcstatus.io/v2/status/{version}/{ip}"
         headers = {
@@ -69,83 +71,106 @@ def get_message():
                 version = data['version']['name']
                 host = data['host']
                 port = data['port']
-                embed = Embed(title="Servidor online! | 🟢",
-                              description=f"**IP: ** ```{host}```**Porta: **```\n{port}```\n**Jogadores Online: **```{online_players}/{max_players}```**Versão: **```{version}```",
+                embed = Embed(title="Server online! | 🟢",
+                              description=f"**IP: ** ```{host}```**Port: **```\n{port}```\n**Online Players: **```{online_players}/{max_players}```**Version: **```{version}```",
                               color=green
                               )
-                embed.set_footer(text="ToP - Bot")
-                embed.set_thumbnail(url="https://i.imgur.com/UteffyD.png")
+                if get_from_config('has_footer', None):
+                    embed.set_footer(text=footer)
+                if get_from_config('has_thumbnail', None):
+                    embed.set_thumbnail(url=thumnail)
                 return embed
             else:
-                embed = Embed(title="Servidor offline! | 🔴",
+                embed = Embed(title="Server offline! | 🔴",
                               description="The server is offline.",
                               color=red
                               )
-                embed.set_footer(text="ToP - Bot")
-                embed.set_thumbnail(url="https://i.imgur.com/UteffyD.png")
+                if get_from_config('has_footer', None):
+                    embed.set_footer(text=footer)
+
+                if get_from_config('has_thumbnail', None):
+                    embed.set_thumbnail(url=thumnail)
                 return embed
         else:
-            embed = Embed(title="Erro! | ⚠️",
-                          description="O servidor não respondeu! Aguarde um pouco e tente novamente!",
+            embed = Embed(title="Error! | ⚠️",
+                          description="The server did not respond! Wait a bit and try again!",
                           color=yellow
                           )
-            embed.set_footer(text="ToP - Bot")
-            embed.set_thumbnail(url="https://i.imgur.com/UteffyD.png")
+            if get_from_config('has_footer', None):
+                embed.set_footer(text=footer)
+            if get_from_config('has_thumbnail', None):
+                embed.set_thumbnail(url=thumnail)
             return embed
     else:
-        embed = Embed(title="Erro! | ⚠️",
-                      description="O IP não foi configurado corretamente, peça ajuda a um STAFF!",
+        embed = Embed(title="Error! | ⚠️",
+                      description="The IP was not correctly configured, ask a STAFF for help!",
                       color=yellow
                       )
-        embed.set_footer(text="ToP - Bot")
-        embed.set_thumbnail(url="https://i.imgur.com/UteffyD.png")
+        if get_from_config('has_footer', None):
+            embed.set_footer(text=footer)
+        if get_from_config('has_thumbnail', None):
+            embed.set_thumbnail(url=thumnail)
         return embed
 
 
-# Cria uma instância do bot
+# Create a bot instance
 bot = Bot(intents=Intents.default())
 
 
-# Define um comando de barra para verificar o status do servidor
+# Define a slash command to check server status
 @bot.slash_command(name="status", description="This is a test command.")
 async def _test(interaction: Interaction):
     embed = get_message()
     await interaction.response.send_message(embed=embed)
 
 
-# Define um comando de barra para operações de administração
+# Define a slash command for administration operations
 @bot.slash_command(name="adm", description="Repeats your message.")
-async def _echo(interaction: Interaction, ip_novo: Option(str, "Enter new IP", required=True)):
+async def _echo(interaction: Interaction, new_ip: Option(str, "Enter new IP", required=True)):
     allowed_roles = get_from_config('allowed_roles', [])
     user_roles = interaction.user.roles
+    if get_from_config('has_footer', None):
+        footer = get_from_config('footer', None)
+
+    if get_from_config('has_thumbnail', None):
+        thumnail = get_from_config('thumbnail', None)
 
     if not any(role.id in allowed_roles for role in user_roles):
-        embed = Embed(title="Erro! | ⚠️",
-                      description="Você não possui permissões suficientes para executar este comando!",
+        embed = Embed(title="Error! | ⚠️",
+                      description="You do not have sufficient permissions to execute this command!",
                       color=yellow
                       )
-        embed.set_footer(text="ToP - Bot")
-        embed.set_thumbnail(url="https://i.imgur.com/UteffyD.png")
+        if get_from_config('has_footer', None):
+            embed.set_footer(text=footer)
+
+        if get_from_config('has_thumbnail', None):
+            embed.set_thumbnail(url=thumnail)
         await interaction.response.send_message(embeds=[embed])
         return
 
     i_ip = get_from_config('ip', None)
-    if isValidIP(ip_novo):
-        update_ip_in_config(ip_novo)
-        embed = Embed(title="IP alterado com suscesso! | ✅",
-                      description=f"`{i_ip} --> {ip_novo}`\n\nPor favor verifique se o IP esta correto!",
+    if isValidIP(new_ip):
+        update_ip_in_config(new_ip)
+        embed = Embed(title="IP successfully changed! | ✅",
+                      description=f"`{i_ip} --> {new_ip}`\n\nPlease check if the IP is correct!",
                       color=green
                       )
-        embed.set_footer(text="ToP - Bot")
-        embed.set_thumbnail(url="https://i.imgur.com/UteffyD.png")
+        if get_from_config('has_footer', None):
+            embed.set_footer(text=footer)
+
+        if get_from_config('has_thumbnail', None):
+            embed.set_thumbnail(url=thumnail)
         await interaction.response.send_message(embeds=[embed])
     else:
-        embed = Embed(title="Erro! | ⚠️",
-                      description="O IP não parece válido! tente verificar novamente",
+        embed = Embed(title="Error! | ⚠️",
+                      description="The IP does not seem valid! Try checking again",
                       color=yellow
                       )
-        embed.set_footer(text="ToP - Bot")
-        embed.set_thumbnail(url="https://i.imgur.com/UteffyD.png")
+        if get_from_config('has_footer', None):
+            embed.set_footer(text=footer)
+
+        if get_from_config('has_thumbnail', None):
+            embed.set_thumbnail(url=thumnail)
         await interaction.response.send_message(embeds=[embed])
 
 
