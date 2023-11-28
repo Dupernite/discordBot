@@ -118,15 +118,15 @@ bot = Bot(intents=Intents.default())
 
 
 # Define a slash command to check server status
-@bot.slash_command(name="status", description="This is a test command.")
-async def _test(interaction: Interaction):
+@bot.slash_command(name="status", description="Check the server status!")
+async def _status(interaction: Interaction):
     embed = get_message()
     await interaction.response.send_message(embed=embed)
 
 
 # Define a slash command for administration operations
-@bot.slash_command(name="adm", description="Repeats your message.")
-async def _echo(interaction: Interaction, new_ip: Option(str, "Enter new IP", required=True)):
+@bot.slash_command(name="adm", description="This is an Admin's only command!")
+async def _adm(interaction: Interaction, new_ip: Option(str, "Enter new IP", required=True)):
     allowed_roles = get_from_config('allowed_roles', [])
     user_roles = interaction.user.roles
     if get_from_config('has_footer', None):
