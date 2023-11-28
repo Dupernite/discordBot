@@ -15,6 +15,6 @@ Para utilizar este Bot é nescessário preencher a 'config.json', nela você pre
   "thumbnail": "https://i.imgur.com/UteffyD.png"
 }
 ```
-# Commands:
+# Comandos:
 * **/status** - pode ser usado por todos para verificar o status atual do servidor.
 * **/adm** [new ip] - só pode ser usado pelos cargos definidos em “allowed_roles” e é usado para alterar o IP.
