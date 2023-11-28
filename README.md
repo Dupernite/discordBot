@@ -14,3 +14,7 @@ To use this Bot, you need to fill in the 'config.json'. In it, you will need to 
   "has_thumbnail": "true",
   "thumbnail": "https://i.imgur.com/UteffyD.png"
 }
+```
+# Commands:
+* **/status** - can be used by everyone to check the current server status.
+* **/adm** [new ip] - can only be used by the roles set on "allow_roles" and is used to change the IP.
