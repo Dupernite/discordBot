@@ -52,8 +52,9 @@ def update_ip_in_config(new_ip):
 # Função para obter a mensagem de status do servidor
 def get_message():
     ip = get_from_config('ip', None)
+    version = get_from_config('version', None)
     if isValidIP(ip):
-        url = f"https://api.mcstatus.io/v2/status/bedrock/{ip}"
+        url = f"https://api.mcstatus.io/v2/status/{version}/{ip}"
         headers = {
             "Accept": "application/json",
         }
